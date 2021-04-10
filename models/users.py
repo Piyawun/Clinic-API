@@ -1,22 +1,22 @@
-from re import RegexFlag
-from flask_bcrypt import generate_password_hash,check_password_hash
-from flask_sqlalchemy import SQLAlchemy
-from flask_migrate import Migrate
-from app import db
+from flask_bcrypt import generate_password_hash, check_password_hash
 
-class Users(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String,required=True,unique=True)
-    password = db.Column(db.Text,required=True)
-    name = db.Column(db.String)
-    role = db.Column(db.String)
-    department = db.Column(db.String)
-    create_at = db.Column(db.DateTime)
-    update_at = db.Column(db.DateTime)
+from mongoengine import Document, StringField, EmailField
+
+
+class Users(Document):
+    username = StringField(required=True,unique=True)
+    password = StringField(required=True,min_length=6,regex=None)
+    name = StringField(required=True)
+    role = StringField(required=True)
+    department = StringField(required=True)
+    create_at = StringField(required=True)
+    update_at = StringField(required=True)
+
 
     def generate_pw_hash(self):
         self.password = generate_password_hash(
             password=self.password).decode('utf-8')
+    # Use documentation from BCrypt for password hashing
     generate_pw_hash.__doc__ = generate_password_hash.__doc__
     
     def check_pw_hash(self, password: str):

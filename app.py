@@ -2,31 +2,36 @@ from flask import Flask
 from flask_cors import CORS
 from flask_jwt_extended.jwt_manager import JWTManager
 from flask_restful import Api
-from flask_sqlalchemy import SQLAlchemy
 
-from flask_migrate import Migrate
+from flask_pymongo import pymongo
+from flask_mongoengine import MongoEngine
 
 from api.routes import create_route
 
 
-app = Flask(__name__)
+
 config = {
     'JSON_SORT_KEYS': False,
-    'SQLALCHEMY_DATABASE_URI': 'postgresql://postgres:2543@localhost:5432/Clinic',
-    'SECRET_KEY':'this-really-needs-to-be-changed',
+    'MONGODB_SETTINGS': {
+        'host':'mongodb+srv://clinicDB:Clinic2543@clinicm.amrfo.mongodb.net/myFirstDatabase?retryWrites=true&w=majority'
+    },
     'JWT_SECRET_KEY': '&F)J@NcRfUjXn2r5u7x!A%D*G-KaPdSg',
     'JWT_ACCESS_TOKEN_EXPIRES': 300,
     'JWT_REFRESH_TOKEN_EXPIRES': 604800
 }
 
-db = SQLAlchemy(app)
+# init flask
+app = Flask(__name__)
+
+# configure app
+app.config.update(config)
 
 # init api and routes
 api = Api(app)
 create_route(api=api)
 
-
-migrate = Migrate(app, db)
+# init MongoEngine
+db = MongoEngine(app=app)
 
 # init jwt manager
 jwt = JWTManager(app=app)
@@ -36,4 +41,4 @@ CORS(app, resources={r"/*": {"origin": "*"}})
 
 
 if __name__ == '__main__':
-    app.run(debug=True,reload=True)
+    app.run(host='0.0.0.0', port=5000, debug=True,use_reloader=True)
