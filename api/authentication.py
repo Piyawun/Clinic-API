@@ -14,21 +14,22 @@ from models.oauth.error import OAuthErrorResponse
 from models.oauth.token import TokenResponse
 from models.users import Users
 
+
 class SignUpAPI(Resource):
     # Register
-        def post(self) -> Response:
-            body = request.get_json()
-            user = Users(**body)
-            user.save()
-            response = Response()
-            response.status_code = 201
-            return response
-            
+    def post(self) -> Response:
+        body = request.get_json()
+        user = Users(**body)
+        user.save()
+        response = Response()
+        response.status_code = 201
+        return response
+
 
 class TokenAPI(Resource):
     # Login
     def post(self) -> Response:
-        body = request.form.to_dict()
+        body = request.get_json()
         if body.get('username') is None or body.get('password') is None:
             response = jsonify(
                 OAuthErrorResponse(
@@ -67,8 +68,9 @@ class RefreshToken(Resource):
     def post(self):
         user = get_jwt_identity()
         return generate_token_response(user)
-    
-def generate_token_response(user:str):
+
+
+def generate_token_response(user: str):
     # Genarate token
     access_token = create_access_token(identity=user)
     refresh_token = create_refresh_token(identity=user)

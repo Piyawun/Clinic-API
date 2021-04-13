@@ -8,12 +8,10 @@ from flask_mongoengine import MongoEngine
 
 from api.routes import create_route
 
-
-
 config = {
     'JSON_SORT_KEYS': False,
     'MONGODB_SETTINGS': {
-        'host':'mongodb+srv://clinicDB:Clinic2543@clinicm.amrfo.mongodb.net/myFirstDatabase?retryWrites=true&w=majority'
+        'host': 'mongodb+srv://clinicDB:Clinic2543@clinicm.amrfo.mongodb.net/myFirstDatabase?retryWrites=true&w=majority'
     },
     'JWT_SECRET_KEY': '&F)J@NcRfUjXn2r5u7x!A%D*G-KaPdSg',
     'JWT_ACCESS_TOKEN_EXPIRES': 300,
@@ -39,6 +37,5 @@ jwt = JWTManager(app=app)
 # setup CORS
 CORS(app, resources={r"/*": {"origin": "*"}})
 
-
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True,use_reloader=True)
+    app.run(host='0.0.0.0', port=5000, debug=True, use_reloader=True)
