@@ -13,24 +13,69 @@ from mongoengine import DoesNotExist
 from models.oauth.error import OAuthErrorResponse
 from models.oauth.token import TokenResponse
 from models.users import Users
+from datetime import datetime
+import time
 
 
 class SignUpAPI(Resource):
     # Register
     def post(self) -> Response:
         body = request.get_json()
-        user = Users(**body)
+
+        key = str(round(time.time() * 999))
+        data = {
+            'staffID': key,
+            'username': body['username'],
+            'password': body['password'],
+            'name': body['name'],
+            'role': body['role'],
+            'department': body['department'],
+            'create_at': str(datetime.utcnow()),
+            'update_at': str(datetime.utcnow()),
+        }
+        user = Users(**data)
         user.save()
         response = Response()
         response.status_code = 201
         return response
 
 
+class getUserAPI(Resource):
+    def get(self) -> Response:
+        user = Users.objects.values_list('staffID', 'name', 'role', 'department', 'username')
+
+        if len(user) > 0:
+            response = jsonify(user)
+            response.status_code = 200
+            return response
+        else:
+            response = Response()
+            response.status_code = 204
+            return response
+
+
+class getUserByIdAPI(Resource):
+
+    def get(self) -> Response:
+
+        staffID = request.args.get('staffID')
+        user = Users.objects(staffID=staffID).values_list('staffID', 'name', 'role','username', 'department')
+
+        if len(user) > 0:
+            response = jsonify(user)
+            response.status_code = 200
+            return response
+        else:
+            response = Response()
+            response.status_code = 200
+            return response
+
+
 class TokenAPI(Resource):
     # Login
     def post(self) -> Response:
         body = request.get_json()
-        if body.get('username') is None or body.get('password') is None:
+        if body.get is None or body.get is None:
             response = jsonify(
                 OAuthErrorResponse(
                     "invalid_request", "The request is missing a required parameter."
@@ -40,8 +85,8 @@ class TokenAPI(Resource):
             return response
 
         try:
-            user: Users = Users.objects.get(username=body.get('username'))
-            auth_success = user.check_pw_hash(body.get('password'))
+            user: Users = Users.objects.get
+            auth_success = user.check_pw_hash(body.get)
             if not auth_success:
                 response = jsonify(
                     OAuthErrorResponse(

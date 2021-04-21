@@ -1,5 +1,4 @@
-from re import T
-from flask import request, jsonify, Response, jsonify, current_app
+from flask import request, Response, jsonify, current_app
 from flask_restful import Resource
 from flask_jwt_extended import jwt_required
 
@@ -10,6 +9,8 @@ from models.patients import Patients
 from datetime import date
 
 import time
+
+
 class PatentApi(Resource):
     # @jwt_required()
     def get(self) -> Response:
@@ -39,18 +40,17 @@ class PatentApi(Resource):
         body = request.get_json()
         today = date.today()
 
-        key = str(round(time.time()*999));
+        key = str(round(time.time() * 999))
         data = {
             'patentID': key,
-            'name':body['name'],
-            'dob':body['dob'],
-            'tel':body['tel'],
+            'name': body['name'],
+            'dob': body['dob'],
+            'tel': body['tel'],
             'email': body['email'],
             'job': body['job'],
             'create_at': str(today.strftime("%d/%m/%Y")),
             'update_at': str(today.strftime("%d/%m/%Y"))
         }
-
 
         validate_result = schema.validate(data)
         if validate_result.get('success', False) is False:
@@ -62,6 +62,7 @@ class PatentApi(Resource):
 
         except NotUniqueError:
             return Response("Name is already exit", status=400)
+
 
 class PatentApiID(Resource):
 
@@ -84,13 +85,16 @@ class PatentApiID(Resource):
         obj.delete()
         response = Response()
         response.status_code = 200
-        
-    def put(self)-> Response:
+
+    def put(self) -> Response:
         today = date.today()
         body = request.get_json()
         patent = Patients.objects(patentID=body['patentID'])
         if len(patent) > 0:
-            obj = Patients.objects(patentID=body['patentID']).update(set__name=body['name'],set__dob=body['dob'],set__tel=body['tel'],set__email=body['email'],set__job=body['job'],set__update_at=str(today.strftime("%d/%m/%Y")))
+            obj = Patients.objects(patentID=body['patentID']).update(set__name=body['name'], set__dob=body['dob'],
+                                                                     set__tel=body['tel'], set__email=body['email'],
+                                                                     set__job=body['job'],
+                                                                     set__update_at=str(today.strftime("%d/%m/%Y")))
             response = Response("Success to updated patent")
             response.status_code = 200
             return response
