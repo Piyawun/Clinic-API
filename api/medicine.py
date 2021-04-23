@@ -1,3 +1,4 @@
+import uuid
 from re import T
 from flask import request, jsonify, Response, jsonify, current_app
 from flask_restful import Resource
@@ -42,9 +43,9 @@ class MedicineApi(Resource):
         body = request.get_json()
         today = date.today()
 
-        key = str(round(time.time() * 999))
+        key = uuid.uuid4().int
         data = {
-            'medicineID': key,
+            'medicineID': str(key)[0:6],
             'name': body['name'],
             'amount': body['amount'],
             'lot_num': body['lot_num'],

@@ -8,6 +8,6 @@ class Bookings(Document):
     staffID = StringField(required=True)
     detail = StringField(required=True)
     dateBooking = StringField(required=True)
-    status = BooleanField(required=True)
+    status = StringField(required=True)
     create_at = DateTimeField(required=True, default=datetime.utcnow())
     update_at = DateTimeField(required=True, default=datetime.utcnow())

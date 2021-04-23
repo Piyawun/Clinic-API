@@ -1,3 +1,4 @@
+import uuid
 from re import T
 from flask import request, jsonify, Response, jsonify, current_app
 from flask_restful import Resource
@@ -40,14 +41,14 @@ class BookingApi(Resource):
 
         body = request.get_json()
 
-        key = str(round(time.time() * 999))
+        key = uuid.uuid4().int
         data = {
-            'bookingID': key,
+            'bookingID': str(key)[0:6],
             'staffID': body['staffID'],
             'patentID': body['patentID'],
             'detail': body['detail'],
             'dateBooking': body['dateBooking'],
-            'status': body['status'],
+            'status': "กำลังรอคิว",
             'create_at': str(datetime.utcnow()),
             'update_at': str(datetime.utcnow())
         }
@@ -100,4 +101,35 @@ class BookingApiID(Resource):
             response.status_code = 200
             return response
         else:
-            return Response("No have booking", status=400)
+            return Response("No have booking", status=204)
+
+
+class BookingIdClose(Resource):
+    def put(self) -> Response:
+
+        body = request.get_json()
+        booking = Bookings.objects(bookingID=body['bookingID'])
+        if len(booking) > 0:
+            Bookings.objects(bookingID=body['bookingID']).update(
+                set__status="ตรวจเสร็จสิ้น",
+                set__update_at=str(datetime.utcnow()))
+            response = Response("Success to updated booking")
+            response.status_code = 200
+            return response
+        else:
+            return Response("No have booking", status=204)
+
+
+class ConfIdBooking(Resource):
+    def put(self) -> Response:
+        body = request.get_json()
+        booking = Bookings.objects(bookingID=body['bookingID'])
+        if len(booking) > 0:
+            Bookings.objects(bookingID=body['bookingID']).update(
+                set__status="กำลังตรวจ",
+                set__update_at=str(datetime.utcnow()))
+            response = Response("Success to updated booking")
+            response.status_code = 200
+            return response
+        else:
+            return Response("No have booking", status=204)

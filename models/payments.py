@@ -9,5 +9,6 @@ class Payments(Document):
     objMed = ListField(required=False)
     objOrder = ListField(required=False)
     price = DecimalField(required=True)
+    status = StringField(required=True)
     create_at = DateTimeField(required=False, default=datetime.utcnow())
     update_at = DateTimeField(required=False, default=datetime.utcnow())

@@ -1,3 +1,5 @@
+import uuid
+
 from flask import request, Response, jsonify, current_app
 from flask_restful import Resource
 from flask_jwt_extended import jwt_required
@@ -40,9 +42,9 @@ class PatentApi(Resource):
         body = request.get_json()
         today = date.today()
 
-        key = str(round(time.time() * 999))
+        key = uuid.uuid4().int
         data = {
-            'patentID': key,
+            'patentID': str(key)[0:6],
             'name': body['name'],
             'dob': body['dob'],
             'tel': body['tel'],

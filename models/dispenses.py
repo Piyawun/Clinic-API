@@ -15,5 +15,6 @@ class DispensesMed(Document):
     reportID = StringField(required=True)
     medID = StringField(required=True)
     amount = StringField(required=True)
+    status = StringField(required=True)
     create_at = DateTimeField(required=False, default=datetime.utcnow())
     update_at = DateTimeField(required=False, default=datetime.utcnow())

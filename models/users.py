@@ -8,9 +8,9 @@ class Users(Document):
     staffID = StringField(required=True, primary_key=True)
     username = StringField(required=True, unique=True)
     password = StringField(required=True, min_length=6, regex=None)
-    name = StringField(required=True)
-    role = StringField(required=True)
-    department = StringField(required=True)
+    name = StringField(required=False)
+    role = StringField(required=False)
+    department = StringField(required=False)
     create_at = DateTimeField(required=False, default=datetime.utcnow())
     update_at = DateTimeField(required=False, default=datetime.utcnow())
 

@@ -1,3 +1,5 @@
+import uuid
+
 from flask import request, Response, jsonify, current_app
 from flask_restful import Resource
 from flask_jwt_extended import (
@@ -21,23 +23,27 @@ class SignUpAPI(Resource):
     # Register
     def post(self) -> Response:
         body = request.get_json()
-
-        key = str(round(time.time() * 999))
-        data = {
-            'staffID': key,
-            'username': body['username'],
-            'password': body['password'],
-            'name': body['name'],
-            'role': body['role'],
-            'department': body['department'],
-            'create_at': str(datetime.utcnow()),
-            'update_at': str(datetime.utcnow()),
-        }
-        user = Users(**data)
-        user.save()
-        response = Response()
-        response.status_code = 201
-        return response
+        try:
+            key = uuid.uuid4().int
+            data = {
+                'staffID': str(key)[0:6],
+                'username': body['username'],
+                'password': body['password'],
+                'name': body['name'],
+                'role': body['role'],
+                'department': body['department'],
+                'create_at': str(datetime.utcnow()),
+                'update_at': str(datetime.utcnow()),
+            }
+            user = Users(**data)
+            user.save()
+            response = Response()
+            response.status_code = 201
+            return response
+        except Exception as e:
+            response = Response()
+            response.status_code = 204
+            return response
 
 
 class getUserAPI(Resource):
@@ -70,6 +76,21 @@ class getUserByIdAPI(Resource):
             response.status_code = 200
             return response
 
+    def put(self)->Response:
+        body = request.get_json()
+        user = Users.objects(staffID=body['staffID'])
+        if len(user) > 0:
+            Users.objects(staffID=body['staffID']).update(
+                set__name=body['name'],
+                set__role=body['role'],
+                set__username=body['username'],
+                set__update_at=str(datetime.utcnow()))
+            response = Response()
+            response.status_code = 200
+            return response
+        else:
+            return Response("No have booking", status=400)
+
 
 class TokenAPI(Resource):
     # Login
@@ -85,8 +106,8 @@ class TokenAPI(Resource):
             return response
 
         try:
-            user: Users = Users.objects.get
-            auth_success = user.check_pw_hash(body.get)
+            user: Users = Users.objects.get(username=body.get('username'))
+            auth_success = user.check_pw_hash(body.get('password'))
             if not auth_success:
                 response = jsonify(
                     OAuthErrorResponse(
@@ -96,6 +117,7 @@ class TokenAPI(Resource):
                 response.status_code = 400
                 return response
             else:
+                print(user.id)
                 return generate_token_response(str(user.id))
         except DoesNotExist:
             response = jsonify(
@@ -124,7 +146,8 @@ def generate_token_response(user: str):
             access_token=access_token,
             token_type="bearer",
             expires_in=current_app.config['JWT_ACCESS_TOKEN_EXPIRES'],
-            refresh_token=refresh_token
+            refresh_token=refresh_token,
+            staffID=user
         ).__dict__
     )
     response.status_code = 200

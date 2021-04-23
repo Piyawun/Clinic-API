@@ -1,4 +1,5 @@
 import time
+import uuid
 from datetime import datetime
 
 from flask import request, jsonify, Response, current_app
@@ -30,9 +31,9 @@ class ReportAPI(Resource):
                 'update_at': Kanpai.String()
             })
 
-            key = str(round(time.time() * 999))
+            key = uuid.uuid4().int
             data = {
-                'reportID': key,
+                'reportID': str(key)[0:6] + '_' + body['patentID'],
                 'bookingID': body['bookingID'],
                 'staffID': body['staffID'],
                 'patentID': body['patentID'],
@@ -48,7 +49,7 @@ class ReportAPI(Resource):
 
             try:
                 Bookings.objects(bookingID=body['bookingID']).update(
-                    set__status=False,
+                    set__status="ตรวจเสร็จสิ้น",
                     set__update_at=str(datetime.utcnow())
                 )
 

@@ -34,13 +34,14 @@ class DispenseApi(Resource):
                         'dispenseMedID': str(key)[0:7],
                         'reportID': report_ID,
                         'medID': data['med_id'],
+                        'status': "รอรับยา",
                         'amount': str(data['med_amount']),
                         'create_at': str(datetime.utcnow()),
                         'update_at': str(datetime.utcnow())
                     }
                     DispensesMed(**queryDisensesMed).save()
                 else:
-                    return Response(status=400)
+                    return Response(status=204)
 
             return Response(status=200)
         else:
@@ -63,6 +64,24 @@ class DispenseApi(Resource):
         obj = DispensesMed.objects(reportID=reportID)
         if len(obj) > 0:
             obj.delete()
+            response = Response()
+            response.status_code = 200
+            return response
+        else:
+            return Response(status=204)
+
+
+class ConfDispenses(Resource):
+
+    def post(self) -> Response:
+        body = request.get_json()
+        reportID = body['reportID']
+        obj = DispensesMed.objects(reportID=reportID)
+        if len(obj) > 0:
+            DispensesMed.objects(reportID=reportID).update(
+                set__status="จ่ายยา",
+                set__update_at=str(datetime.utcnow())
+            )
             response = Response()
             response.status_code = 200
             return response
