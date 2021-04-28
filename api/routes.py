@@ -5,8 +5,8 @@ from api.patent import PatentApi, PatentApiID
 from api.medicine import MedicineApi, MedicineApiID
 from api.booking import BookingApi, BookingApiID, BookingIdClose, ConfIdBooking
 from api.payment import PaymentApi, PaymentIdAPI
-from api.report import ReportAPI, ReportIdAPI
-from api.dispense import DispenseApi, ConfDispenses
+from api.report import ReportAPI, ReportIdAPI, ReportsByUserID
+from api.dispense import DispenseApi, ConfDispenses, DispensesIdAPI
 from api.order import OrderApi, SearchOrderByReport
 
 
@@ -40,11 +40,11 @@ def create_route(api: Api):
     # Report รายงานประวัติผู้ป่วย
     api.add_resource(ReportAPI, '/report')  # get get all report , post add report
     api.add_resource(ReportIdAPI, '/report/id')  # get report by id do everything by reportID get update delete
-
+    api.add_resource(ReportsByUserID,'/report/patient')
     # dispense จ่ายยา
     api.add_resource(DispenseApi, '/dispense')  # post จ่ายยาให้คนไข้ , get ดูยาที่ถ่ายไปตาม reportID #del ลบยา
     api.add_resource(ConfDispenses, '/dispense/confirm')  # post confirm การจ่ายยา
-
+    api.add_resource(DispensesIdAPI,'/dispense/id')
     # Order
     api.add_resource(OrderApi, '/orders')  # post จ่านค่าใช้จ่ายเพิ่มเติม ,  get ดูรายละเอียดค่าใช้จ่ายตาม orderID
     api.add_resource(SearchOrderByReport, '/orders/report')  # get ดูค่าใช้จ่ายตาม reportID

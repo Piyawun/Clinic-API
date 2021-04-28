@@ -21,6 +21,12 @@ config = {
 # init flask
 app = Flask(__name__)
 
+# setup CORS
+# CORS(app, resources={r"/*": {"origin": "*"}})
+CORS(app, origins="*", allow_headers=[
+    "Content-Type", "Authorization", "Access-Control-Allow-Credentials"
+], supports_credentials=True)
+
 # configure app
 app.config.update(config)
 
@@ -34,8 +40,6 @@ db = MongoEngine(app=app)
 # init jwt manager
 jwt = JWTManager(app=app)
 
-# setup CORS
-CORS(app, resources={r"/*": {"origin": "*"}})
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True, use_reloader=True)
+    app.run(host='localhost', port=5000, debug=True, use_reloader=True)

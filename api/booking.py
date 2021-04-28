@@ -12,6 +12,8 @@ from datetime import date, datetime
 
 import time
 
+from models.patients import Patients
+
 
 class BookingApi(Resource):
 
@@ -56,24 +58,36 @@ class BookingApi(Resource):
         validate_result = schema.validate(data)
         if validate_result.get('success', False) is False:
             return Response(status=400)
+        patent = Patients.objects(patentID=body['patentID'])
+        if len(patent) > 0:
+            try:
 
-        try:
+                Bookings(**data).save()
+                return Response(status=201)
 
-            Bookings(**data).save()
-            return Response(status=201)
+            except NotUniqueError:
+                return Response("ID is already exit", status=400)
 
-        except NotUniqueError:
-            return Response("ID is already exit", status=400)
+        else:
+            return Response(status=204)
 
 
 class BookingApiID(Resource):
 
     # @jwt_required()
     def get(self) -> Response:
-        body = request.get_json()
-        booking = Bookings.objects(bookingID=body['bookingID'])
-        if len(booking) > 0:
-            response = jsonify(booking)
+        body = request.args.get('bookingID')
+        pipline = [
+            {'$match': {'_id': body}},
+            {'$lookup':
+                 {'from': 'patients', 'localField': 'patentID', 'foreignField': '_id', 'as': 'patients'}
+             }
+        ]
+        booking = Bookings.objects.aggregate(pipline)
+        x = list(booking)
+        y = list(x)
+        if len(y) > 0:
+            response = jsonify(y)
             response.status_code = 200
             return response
         else:
@@ -81,27 +95,28 @@ class BookingApiID(Resource):
             response.status_code = 204
             return response
 
-    def delete(self) -> Response:
-        body = request.get_json()
-        obj = Bookings.objects(bookingID=body['bookingID'])
-        obj.delete()
-        response = Response()
+
+def delete(self) -> Response:
+    body = request.get_json()
+    obj = Bookings.objects(bookingID=body['bookingID'])
+    obj.delete()
+    response = Response()
+    response.status_code = 200
+
+
+def put(self) -> Response:
+    body = request.get_json()
+    booking = Bookings.objects(bookingID=body['bookingID'])
+    if len(booking) > 0:
+        Bookings.objects(bookingID=body['bookingID']).update(
+            set__dateBooking=body['dateBooking'],
+            set__status=body['status'],
+            set__update_at=str(datetime.utcnow()))
+        response = Response("Success to updated booking")
         response.status_code = 200
-
-    def put(self) -> Response:
-
-        body = request.get_json()
-        booking = Bookings.objects(bookingID=body['bookingID'])
-        if len(booking) > 0:
-            Bookings.objects(bookingID=body['bookingID']).update(
-                set__dateBooking=body['dateBooking'],
-                set__status=body['status'],
-                set__update_at=str(datetime.utcnow()))
-            response = Response("Success to updated booking")
-            response.status_code = 200
-            return response
-        else:
-            return Response("No have booking", status=204)
+        return response
+    else:
+        return Response("No have booking", status=204)
 
 
 class BookingIdClose(Resource):

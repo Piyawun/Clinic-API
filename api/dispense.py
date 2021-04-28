@@ -39,6 +39,7 @@ class DispenseApi(Resource):
                         'create_at': str(datetime.utcnow()),
                         'update_at': str(datetime.utcnow())
                     }
+
                     DispensesMed(**queryDisensesMed).save()
                 else:
                     return Response(status=204)
@@ -48,9 +49,7 @@ class DispenseApi(Resource):
             return Response(status=204)
 
     def get(self) -> Response:
-        body = request.get_json()
-        reportID = body['reportID']
-        disObj = DispensesMed.objects(reportID=reportID)
+        disObj = DispensesMed.objects.distinct(field='reportID')
         if len(disObj) > 0:
             response = jsonify(disObj)
             response.status_code = 200
@@ -71,6 +70,27 @@ class DispenseApi(Resource):
             return Response(status=204)
 
 
+class DispensesIdAPI(Resource):
+    def get(self) -> Response:
+        reportID = request.args.get('reportID')
+
+        pipline = [
+            {'$match': {'reportID': reportID}},
+            {'$lookup':
+                 {'from': 'medicine', 'localField': 'medID', 'foreignField': '_id', 'as': 'meds'}
+             }
+        ]
+        disObj = DispensesMed.objects.aggregate(pipline)
+        x = list(disObj)
+        y = list(x)
+        if len(y) > 0:
+            response = jsonify(y)
+            response.status_code = 200
+            return response
+        else:
+            return Response(status=204)
+
+
 class ConfDispenses(Resource):
 
     def post(self) -> Response:
@@ -79,7 +99,7 @@ class ConfDispenses(Resource):
         obj = DispensesMed.objects(reportID=reportID)
         if len(obj) > 0:
             DispensesMed.objects(reportID=reportID).update(
-                set__status="จ่ายยา",
+                set__status="จ่ายยาสำเร็จ",
                 set__update_at=str(datetime.utcnow())
             )
             response = Response()

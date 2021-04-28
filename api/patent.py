@@ -1,4 +1,5 @@
 import uuid
+import datetime
 
 from flask import request, Response, jsonify, current_app
 from flask_restful import Resource
@@ -10,7 +11,6 @@ from kanpai import Kanpai
 from models.patients import Patients
 from datetime import date
 
-import time
 
 
 class PatentApi(Resource):
@@ -46,7 +46,7 @@ class PatentApi(Resource):
         data = {
             'patentID': str(key)[0:6],
             'name': body['name'],
-            'dob': body['dob'],
+            'dob': datetime.datetime.strptime(body['dob'], "%Y-%m-%dT%H:%M:%S.%f%z"),
             'tel': body['tel'],
             'email': body['email'],
             'job': body['job'],
@@ -54,9 +54,9 @@ class PatentApi(Resource):
             'update_at': str(today.strftime("%d/%m/%Y"))
         }
 
-        validate_result = schema.validate(data)
-        if validate_result.get('success', False) is False:
-            return Response(status=400)
+        # validate_result = schema.validate(data)
+        # if validate_result.get('success', False) is False:
+        #     return Response(status=400)
 
         try:
             Patients(**data).save()
@@ -70,8 +70,9 @@ class PatentApiID(Resource):
 
     # @jwt_required()
     def get(self) -> Response:
-        body = request.get_json()
-        patent = Patients.objects(patentID=body['patentID'])
+
+        patentID = request.args.get('patentID')
+        patent = Patients.objects(patentID=patentID)
         if len(patent) > 0:
             response = jsonify(patent)
             response.status_code = 200
@@ -93,7 +94,7 @@ class PatentApiID(Resource):
         body = request.get_json()
         patent = Patients.objects(patentID=body['patentID'])
         if len(patent) > 0:
-            obj = Patients.objects(patentID=body['patentID']).update(set__name=body['name'], set__dob=body['dob'],
+            obj = Patients.objects(patentID=body['patentID']).update(set__name=body['name'], set__dob=datetime.datetime.strptime(body['dob'], "%Y-%m-%dT%H:%M:%S.%f%z"),
                                                                      set__tel=body['tel'], set__email=body['email'],
                                                                      set__job=body['job'],
                                                                      set__update_at=str(today.strftime("%d/%m/%Y")))

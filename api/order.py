@@ -9,50 +9,34 @@ from mongoengine import NotUniqueError, DoesNotExist
 from kanpai import Kanpai
 
 from models.orders import Orders
+from models.reports import Reports
 
 
 class OrderApi(Resource):
 
     def post(self) -> Response:
         body = request.get_json()
-        schema = Kanpai.Object({
-            'orderID': Kanpai.String().required(),
-            'reportID': Kanpai.String().required(),
-            'subject': Kanpai.String().required(),
-            'price': Kanpai.String().required(),
-            'staffID': Kanpai.String().required(),
-            'create_at': Kanpai.String(),
-            'update_at': Kanpai.String()
-        })
-
-        key = uuid.uuid4().int
-        data = {
-            'orderID': str(key)[0:6],
-            'reportID': body['reportID'],
-            'subject': body['subject'],
-            'price': body['price'],
-            'staffID': body['staffID'],
-            'create_at': str(datetime.utcnow()),
-            'update_at': str(datetime.utcnow())
-        }
-
-        validate_result = schema.validate(data)
-        if validate_result.get('success', False) is False:
-            return Response(status=400)
-
-        try:
-            Orders(**data).save()
-            response = jsonify(data)
-            response.status_code = 200
-            return response
-
-        except NotUniqueError:
-            return Response(status=400)
+        id = body.get('reportID')
+        report = Reports.objects(reportID=id)
+        if len(report) > 0:
+            for i in body.get('order'):
+                key = uuid.uuid4().int
+                data = {
+                    'orderID': str(key)[0:6],
+                    'reportID': i['reportID'],
+                    'subject': i['subject'],
+                    'price': i['price'],
+                    'staffID': i['staffID'],
+                    'create_at': str(datetime.utcnow()),
+                    'update_at': str(datetime.utcnow())
+                }
+                Orders(**data).save()
+            return Response(status=201)
+        else:
+            return Response(status=204)
 
     def get(self) -> Response:
-        body = request.get_json()
-        id = body['orderID']
-        order = Orders.objects(orderID=id)
+        order = Orders.objects.distinct(field="reportID")
         if len(order) > 0:
             response = jsonify(order)
             response.status_code = 200

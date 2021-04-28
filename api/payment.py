@@ -11,6 +11,7 @@ from kanpai import Kanpai
 from models.payments import Payments
 from models.orders import Orders
 from models.dispenses import DispensesMed
+from models.reports import Reports
 
 
 class PaymentApi(Resource):
@@ -18,6 +19,7 @@ class PaymentApi(Resource):
         body = request.get_json()
         reportID = body['reportID']
         check_bill = Payments.objects(reportID=reportID)
+        print(check_bill)
         if len(check_bill) <= 0:
             calMed = calculatorMed(reportID)
             if len(calMed) > 0:
@@ -63,25 +65,29 @@ class PaymentApi(Resource):
         else:
             return Response(status=204)
 
-
-def get(self) -> Response:
-    bill = Payments.objects()
-    if len(bill) > 0:
-        response = jsonify(bill)
-        response.status_code = 200
-        return response
-    else:
-        return Response(status=204)
+    def get(self) -> Response:
+        bill = Payments.objects()
+        if len(bill) > 0:
+            response = jsonify(bill)
+            response.status_code = 200
+            return response
+        else:
+            return Response(status=204)
 
 
 class PaymentIdAPI(Resource):
 
     def get(self) -> Response:
-        body = request.get_json()
-        paymentID = body['paymentID']
-        bill = Payments.objects(paymentID=paymentID)
+        reportID = request.args.get('reportID')
+        bill = Payments.objects(reportID=reportID)
+        report = Reports.objects(reportID=reportID)
+        data = {
+            'bill': bill,
+            'report': report
+        }
+        print(report)
         if len(bill) > 0:
-            response = jsonify(bill)
+            response = jsonify(data)
             response.status_code = 200
             return response
         else:
@@ -90,11 +96,11 @@ class PaymentIdAPI(Resource):
     def put(self) -> Response:
 
         body = request.get_json()
-        paymentID = body['paymentID']
-        bill = Payments.objects(paymentID=paymentID)
+        reportID = body['reportID']
+        bill = Payments.objects(reportID=reportID)
         if len(bill) > 0:
-            Payments.objects(paymentID=paymentID).update(set__status="ชำระเงินสำเร็จ",
-                                                         set__update_at=str(datetime.utcnow()))
+            Payments.objects(reportID=reportID).update(set__status="ชำระเงินสำเร็จ",
+                                                       set__update_at=str(datetime.utcnow()))
             response = jsonify(bill)
             response.status_code = 200
             return response
@@ -164,6 +170,7 @@ def calculatorMed(reportID):
 
             data = [{
                 'medID': data['meds'][0]['_id'],
+                'name': data['meds'][0]['name'],
                 'price': data['meds'][0]['price'],
                 'amount': data['amount'],
                 'sum_price': sumMeds

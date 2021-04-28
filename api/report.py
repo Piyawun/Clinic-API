@@ -54,7 +54,9 @@ class ReportAPI(Resource):
                 )
 
                 Reports(**data).save()
-                return Response(status=201)
+                response = jsonify(str(key)[0:6] + '_' + body['patentID'])
+                response.status_code = 201
+                return response
 
             except NotUniqueError:
                 return Response("Report is already add to storage", status=400)
@@ -76,10 +78,8 @@ class ReportAPI(Resource):
 
 
 class ReportIdAPI(Resource):
-
     def get(self) -> Response:
-        body = request.get_json()
-        id = body['reportID']
+        id = request.args.get('reportID')
 
         pipline = [
             {"$match": {"_id": id}},
@@ -91,6 +91,12 @@ class ReportIdAPI(Resource):
              },
             {"$lookup":
                  {'from': 'patients', 'localField': 'patentID', 'foreignField': '_id', 'as': 'patients'}
+             },
+            {"$lookup":
+                 {'from': 'dispenses_med', 'localField': '_id', 'foreignField': 'reportID', 'as': 'dispenses'}
+             },
+            {"$lookup":
+                 {'from': 'orders', 'localField': '_id', 'foreignField': 'reportID', 'as': 'orders'}
              }
         ]
 
@@ -102,6 +108,8 @@ class ReportIdAPI(Resource):
             staff = y[0]['staffs']
             patient = y[0]['patients']
             booking = y[0]['bookings']
+            dispenses = y[0]['dispenses']
+            orders = y[0]['orders']
             data = {
                 'reportID': y[0]['_id'],
                 'booking': booking[0],
@@ -117,7 +125,9 @@ class ReportIdAPI(Resource):
                     'detail': y[0]['detail'],
                     'create_at': y[0]['create_at'],
                     'update_at': y[0]['update_at']
-                }
+                },
+                'dispenses': dispenses,
+                'orders': orders
 
             }
             response = jsonify(data)
@@ -138,17 +148,30 @@ class ReportIdAPI(Resource):
         else:
             return Response(status=204)
 
+    def put(self) -> Response:
+        body = request.get_json()
+        report = Reports.objects(reportID=body['reportID'])
+        if len(report) > 0:
+            Reports.objects(reportID=body['reportID']).update(
+                set__header=body['header'],
+                set__detail=body['detail'],
+                set__update_at=str(datetime.utcnow()))
+            response = Response("Success to updated report")
+            response.status_code = 200
+            return response
+        else:
+            return Response("No have booking", status=204)
 
-def put(self) -> Response:
-    body = request.get_json()
-    report = Reports.objects(reportID=body['reportID'])
-    if len(report) > 0:
-        Reports.objects(reportID=body['reportID']).update(
-            set__header=body['header'],
-            set__detail=body['detail'],
-            set__update_at=str(datetime.utcnow()))
-        response = Response("Success to updated report")
-        response.status_code = 200
-        return response
-    else:
-        return Response("No have booking", status=204)
+
+class ReportsByUserID(Resource):
+
+    def get(self) -> Response:
+        id = request.args.get('patientID')
+        report = Reports.objects(patentID=id)
+        print(report)
+        if len(report) > 0:
+            response = jsonify(report)
+            response.status_code = 200
+            return response
+        else:
+            return Response(status=204)

@@ -95,15 +95,15 @@ class MedicineApiID(Resource):
     def put(self) -> Response:
         today = date.today()
         body = request.get_json()
-        patent = Medicine.objects(medicineID=body['medicineID'])
-        if len(patent) > 0:
+        med = Medicine.objects(medicineID=body['medicineID'])
+        if len(med) > 0:
             Medicine.objects(medicineID=body['medicineID']).update(
-                set__name=body['name'],
+                # set__name=body['name'],
                 set__amount=body['amount'],
-                set__lot_num=body['lot_num'],
-                set__MFG=body['MFG'],
-                set__EXP=body['EXP'],
-                set__price=body['price'],
+                # set__lot_num=body['lot_num'],
+                # set__MFG=body['MFG'],
+                # set__EXP=body['EXP'],
+                # set__price=body['price'],
                 set__update_at=str(datetime.utcnow()))
             response = Response("Success to updated medicine")
             response.status_code = 200
