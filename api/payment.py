@@ -56,29 +56,37 @@ class PaymentApi(Resource):
             try:
                 Payments(**data).save()
                 response = jsonify(data)
-                response.status_code = 200
+                response = jsonify({"data":data,"message":"success","status":201})
+                response.status_code = 201
                 return response
 
             except NotUniqueError:
-                return Response(status=400)
+                response = jsonify({"data":None,"message":"error","status":400})
+                response.status_code = 400
+                return response
 
         else:
-            return Response(status=204)
+            response = jsonify({"data":body,"message":"ReportID does not exist","status":204})
+            response.status_code = 204
+            return response
 
     def get(self) -> Response:
         bill = Payments.objects()
         if len(bill) > 0:
-            response = jsonify(bill)
+            response = jsonify({"data":bill,"message":"success","status":200})
             response.status_code = 200
             return response
         else:
-            return Response(status=204)
+            response = jsonify({"data":None,"message":"document bill is null","status":204})
+            response.status_code = 204
+            return response
 
 
 class PaymentIdAPI(Resource):
 
     def get(self) -> Response:
         reportID = request.args.get('reportID')
+        print(reportID)
         bill = Payments.objects(reportID=reportID)
         report = Reports.objects(reportID=reportID)
         data = {
@@ -87,11 +95,13 @@ class PaymentIdAPI(Resource):
         }
         print(report)
         if len(bill) > 0:
-            response = jsonify(data)
+            response = jsonify({"data":data,"message":"success","status":200})
             response.status_code = 200
             return response
         else:
-            return Response(status=204)
+            response = jsonify({"data":None,"message":"error","status":204})
+            response.status_code = 204
+            return response
 
     def put(self) -> Response:
 
@@ -101,11 +111,13 @@ class PaymentIdAPI(Resource):
         if len(bill) > 0:
             Payments.objects(reportID=reportID).update(set__status="ชำระเงินสำเร็จ",
                                                        set__update_at=str(datetime.utcnow()))
-            response = jsonify(bill)
+            response = jsonify({"data":bill,"message":"success","status":200})
             response.status_code = 200
             return response
         else:
-            return Response(status=204)
+            response = jsonify({"data":None,"message":"bill is not","status":204})
+            response.status_code = 204
+            return response
 
 
 # class ConfPaymentBill(Resource):

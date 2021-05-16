@@ -18,11 +18,11 @@ class MedicineApi(Resource):
     def get(self) -> Response:
         medicine = Medicine.objects()
         if len(medicine) > 0:
-            response = jsonify(medicine)
+            response = jsonify({"data":medicine,"message":"success","status":200})
             response.status_code = 200
             return response
         else:
-            response = Response()
+            response = jsonify({"data":None,"message":"Medicine is null","status":204})
             response.status_code = 204
             return response
 
@@ -59,15 +59,21 @@ class MedicineApi(Resource):
         validate_result = schema.validate(data)
         if validate_result.get('success', False) is False:
             print(data)
-            return Response(status=400)
+            response = jsonify({"data":data,"message":"Error","status":400})
+            response.status_code = 400
+            return response
 
         try:
 
             Medicine(**data).save()
-            return Response(status=201)
+            response = jsonify({"data":data,"message":"success","status":201})
+            response.status_code = 201
+            return response
 
         except NotUniqueError:
-            return Response("ID is already exit", status=400)
+            response = jsonify({"data":None,"message":"Already have Medicine ID","status":400})
+            response.status_code = 400
+            return response
 
 
 class MedicineApiID(Resource):
@@ -75,13 +81,13 @@ class MedicineApiID(Resource):
     # @jwt_required()
     def get(self) -> Response:
         body = request.get_json()
-        patent = Medicine.objects(medicineID=body['medicineID'])
-        if len(patent) > 0:
-            response = jsonify(patent)
+        med = Medicine.objects(medicineID=body['medicineID'])
+        if len(med) > 0:
+            response = jsonify({"data":med,"message":"success","status":200})
             response.status_code = 200
             return response
         else:
-            response = Response()
+            response = jsonify({"data":None,"message":"Medicine is null","status":204})
             response.status_code = 204
             return response
 
@@ -89,8 +95,9 @@ class MedicineApiID(Resource):
         body = request.get_json()
         obj = Medicine.objects(medicineID=body['medicineID'])
         obj.delete()
-        response = Response()
+        response = jsonify({"data":None,"message":"success","status":200})
         response.status_code = 200
+        return response
 
     def put(self) -> Response:
         today = date.today()
@@ -105,8 +112,10 @@ class MedicineApiID(Resource):
                 # set__EXP=body['EXP'],
                 # set__price=body['price'],
                 set__update_at=str(datetime.utcnow()))
-            response = Response("Success to updated medicine")
+            response = jsonify({"data":body,"message":"successfully to update medicineID","status":200})
             response.status_code = 200
             return response
         else:
-            return Response("No have medicineID", status=400)
+            response = jsonify({"data":None,"message":"Medicine Id not found","status":400})
+            response.status_code = 400
+            return response

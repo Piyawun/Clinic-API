@@ -41,21 +41,28 @@ class DispenseApi(Resource):
                     }
 
                     DispensesMed(**queryDisensesMed).save()
+                    
                 else:
                     return Response(status=204)
 
-            return Response(status=200)
+            response = jsonify({"data":None,"message":"success","status":200})
+            response.status_code = 200
+            return response
         else:
-            return Response(status=204)
+            response = jsonify({"data":None,"message":"Report id exit","status":204})
+            response.status_code = 204
+            return response
 
     def get(self) -> Response:
         disObj = DispensesMed.objects.distinct(field='reportID')
         if len(disObj) > 0:
-            response = jsonify(disObj)
+            response = jsonify({"data":disObj,"message":"success","status":200})
             response.status_code = 200
             return response
         else:
-            return Response(status=204)
+            response = jsonify({"data":None,"message":"error","status":204})
+            response.status_code = 204
+            return response
 
     def delete(self) -> Response:
         body = request.get_json()
@@ -63,11 +70,13 @@ class DispenseApi(Resource):
         obj = DispensesMed.objects(reportID=reportID)
         if len(obj) > 0:
             obj.delete()
-            response = Response()
+            response = jsonify({"data":None,"message":"success","status":200})
             response.status_code = 200
             return response
         else:
-            return Response(status=204)
+            response = jsonify({"data":None,"message":"ReportID does not exist","status":204})
+            response.status_code = 204
+            return response
 
 
 class DispensesIdAPI(Resource):
@@ -84,11 +93,13 @@ class DispensesIdAPI(Resource):
         x = list(disObj)
         y = list(x)
         if len(y) > 0:
-            response = jsonify(y)
+            response = jsonify({"data":y,"message":"success","status":200})
             response.status_code = 200
             return response
         else:
-            return Response(status=204)
+            response = jsonify({"data":None,"message":"reportID does not exist","status":204})
+            response.status_code = 204
+            return response
 
 
 class ConfDispenses(Resource):
@@ -102,8 +113,10 @@ class ConfDispenses(Resource):
                 set__status="จ่ายยาสำเร็จ",
                 set__update_at=str(datetime.utcnow())
             )
-            response = Response()
+            response = jsonify({"data":body,"message":"success","status":200})
             response.status_code = 200
             return response
         else:
-            return Response(status=204)
+            response = jsonify({"data":None,"message":"reportID does not exist","status":204})
+            response.status_code = 204
+            return response

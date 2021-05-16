@@ -45,7 +45,9 @@ class ReportAPI(Resource):
 
             validate_result = schema.validate(data)
             if validate_result.get('success', False) is False:
-                return Response(status=400)
+                response = jsonify({"data":None,"message":"error","status":400})
+                response.status_code = 400
+                return response
 
             try:
                 Bookings.objects(bookingID=body['bookingID']).update(
@@ -54,26 +56,31 @@ class ReportAPI(Resource):
                 )
 
                 Reports(**data).save()
-                response = jsonify(str(key)[0:6] + '_' + body['patentID'])
+               
+                response = jsonify({"data":str(key)[0:6] + '_' + body['patentID'],"message":"success","status":201})
                 response.status_code = 201
                 return response
 
             except NotUniqueError:
-                return Response("Report is already add to storage", status=400)
+                response = jsonify({"data":None,"message":"ReportID already add to storage","status":400})
+                response.status_code = 400
+                return response
         else:
-            return Response("Report number don't match", status=400)
+            response = jsonify({"data":None,"message":"ReportID does not exist","status":400})
+            response.status_code = 400
+            return response
 
     # Get all report
     def get(self) -> Response:
         report = Reports.objects()
         if len(report) > 0:
-            response = jsonify(report)
+            response = jsonify({"data":report,"message":"success","status":200})
             response.status_code = 200
             return response
 
         else:
-            response = Response()
-            response.status_code = 204
+            response = jsonify({"data":None,"message":"report id null","status":400})
+            response.status_code = 400
             return response
 
 
@@ -130,11 +137,12 @@ class ReportIdAPI(Resource):
                 'orders': orders
 
             }
-            response = jsonify(data)
+            
+            response = jsonify({"data":data,"message":"success","status":200})
             response.status_code = 200
             return response
         else:
-            response = Response()
+            response = jsonify({"data":None,"message":"error","status":204})
             response.status_code = 204
             return response
 
@@ -143,10 +151,13 @@ class ReportIdAPI(Resource):
         reportObj = Reports.objects(reportID=body['reportID'])
         if len(reportObj) > 0:
             reportObj.delete()
-            response = Response()
+            response = jsonify({"data":None,"message":"success","status":200})
             response.status_code = 200
+            return response
         else:
-            return Response(status=204)
+            response = jsonify({"data":None,"message":"error","status":204})
+            response.status_code = 204
+            return response
 
     def put(self) -> Response:
         body = request.get_json()
@@ -156,11 +167,13 @@ class ReportIdAPI(Resource):
                 set__header=body['header'],
                 set__detail=body['detail'],
                 set__update_at=str(datetime.utcnow()))
-            response = Response("Success to updated report")
+            response = jsonify({"data":body,"message":"success","status":200})
             response.status_code = 200
             return response
         else:
-            return Response("No have booking", status=204)
+            response = jsonify({"data":None,"message":"booking id not found","status":204})
+            response.status_code = 204
+            return response
 
 
 class ReportsByUserID(Resource):
@@ -170,8 +183,10 @@ class ReportsByUserID(Resource):
         report = Reports.objects(patentID=id)
         print(report)
         if len(report) > 0:
-            response = jsonify(report)
+            response = jsonify({"data":report,"message":"Success","status":200})
             response.status_code = 200
             return response
         else:
-            return Response(status=204)
+            response = jsonify({"data":None,"message":"Patient ID is exit, Does found report","status":204})
+            response.status_code = 204
+            return response

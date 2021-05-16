@@ -1,4 +1,6 @@
 from flask_restful import Api
+
+from api.OCR import OCRAPI
 from api.authentication import SignUpAPI, TokenAPI, RefreshToken, getUserByIdAPI, getUserAPI
 
 from api.patent import PatentApi, PatentApiID
@@ -40,11 +42,11 @@ def create_route(api: Api):
     # Report รายงานประวัติผู้ป่วย
     api.add_resource(ReportAPI, '/report')  # get get all report , post add report
     api.add_resource(ReportIdAPI, '/report/id')  # get report by id do everything by reportID get update delete
-    api.add_resource(ReportsByUserID,'/report/patient')
+    api.add_resource(ReportsByUserID, '/report/patient')
     # dispense จ่ายยา
     api.add_resource(DispenseApi, '/dispense')  # post จ่ายยาให้คนไข้ , get ดูยาที่ถ่ายไปตาม reportID #del ลบยา
     api.add_resource(ConfDispenses, '/dispense/confirm')  # post confirm การจ่ายยา
-    api.add_resource(DispensesIdAPI,'/dispense/id')
+    api.add_resource(DispensesIdAPI, '/dispense/id')
     # Order
     api.add_resource(OrderApi, '/orders')  # post จ่านค่าใช้จ่ายเพิ่มเติม ,  get ดูรายละเอียดค่าใช้จ่ายตาม orderID
     api.add_resource(SearchOrderByReport, '/orders/report')  # get ดูค่าใช้จ่ายตาม reportID
@@ -52,3 +54,5 @@ def create_route(api: Api):
     # PaymentAPI
     api.add_resource(PaymentApi, '/payments')  # get รวมใบเสร็จ get ดูใบเสร็จทั้งหมด
     api.add_resource(PaymentIdAPI, '/payments/id')  # ดูใบเสร็จตาม paymentID put confirm ใบเสร็จ
+
+    api.add_resource(OCRAPI, '/ocr')

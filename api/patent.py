@@ -18,26 +18,16 @@ class PatentApi(Resource):
     def get(self) -> Response:
         patent = Patients.objects()
         if len(patent) > 0:
-            response = jsonify(patent)
+            response = jsonify({"data":patent,"message":"success","status":200})
             response.status_code = 200
             return response
         else:
-            response = Response()
+            response = jsonify({"data":None,"message":"success","status":204})
             response.status_code = 204
             return response
 
     # @jwt_required()
     def post(self) -> Response:
-        schema = Kanpai.Object({
-            'patentID': Kanpai.String().required(),
-            'name': Kanpai.String().required(),
-            'dob': Kanpai.String().required(),
-            'tel': Kanpai.String().required(),
-            'email': Kanpai.Email().required(),
-            'job': Kanpai.String().required(),
-            'create_at': Kanpai.String().required(),
-            'update_at': Kanpai.String().required()
-        })
 
         body = request.get_json()
         today = date.today()
@@ -53,17 +43,19 @@ class PatentApi(Resource):
             'create_at': str(today.strftime("%d/%m/%Y")),
             'update_at': str(today.strftime("%d/%m/%Y"))
         }
+        print(data)
 
-        # validate_result = schema.validate(data)
-        # if validate_result.get('success', False) is False:
-        #     return Response(status=400)
 
         try:
             Patients(**data).save()
-            return Response(status=201)
+            response = jsonify({"data":data,"message":"success","status":201})
+            response.status_code = 201
+            return response
 
         except NotUniqueError:
-            return Response("Name is already exit", status=400)
+            response = jsonify({"data":None,"message":"error","status":400})
+            response.status_code = 400
+            return response
 
 
 class PatentApiID(Resource):
@@ -74,11 +66,11 @@ class PatentApiID(Resource):
         patentID = request.args.get('patentID')
         patent = Patients.objects(patentID=patentID)
         if len(patent) > 0:
-            response = jsonify(patent)
+            response = jsonify({"data":patent,"message":"success","status":200})
             response.status_code = 200
             return response
         else:
-            response = Response()
+            response = jsonify({"data":None,"message":"error","status":204})
             response.status_code = 204
             return response
 
@@ -86,20 +78,24 @@ class PatentApiID(Resource):
         body = request.get_json()
         obj = Patients.objects(patentID=body['patentID'])
         obj.delete()
-        response = Response()
+        response = jsonify({"data":None,"message":"success","status":200})
         response.status_code = 200
+        return response
 
     def put(self) -> Response:
         today = date.today()
         body = request.get_json()
         patent = Patients.objects(patentID=body['patentID'])
         if len(patent) > 0:
-            obj = Patients.objects(patentID=body['patentID']).update(set__name=body['name'], set__dob=datetime.datetime.strptime(body['dob'], "%Y-%m-%dT%H:%M:%S.%f%z"),
-                                                                     set__tel=body['tel'], set__email=body['email'],
-                                                                     set__job=body['job'],
-                                                                     set__update_at=str(today.strftime("%d/%m/%Y")))
-            response = Response("Success to updated patent")
+            Patients.objects(patentID=body['patentID']).update(set__name=body['name'], set__dob=datetime.datetime.strptime(body['dob'], "%Y-%m-%dT%H:%M:%S.%f%z"),
+                                                                    set__tel=body['tel'], set__email=body['email'],
+                                                                    set__job=body['job'],
+                                                                    set__update_at=str(today.strftime("%d/%m/%Y")))
+            
+            response = jsonify({"data":body,"message":"success","status":200})
             response.status_code = 200
             return response
         else:
-            return Response("No have parentID", status=400)
+            response = jsonify({"data":body,"message":"Patient id does not exist","status":400})
+            response.status_code = 400
+            return response

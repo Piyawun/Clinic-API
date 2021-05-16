@@ -31,18 +31,22 @@ class OrderApi(Resource):
                     'update_at': str(datetime.utcnow())
                 }
                 Orders(**data).save()
-            return Response(status=201)
+            response = jsonify({"data":None,"message":"successfully to create order","status":201})
+            response.status_code = 201
+            return response
         else:
-            return Response(status=204)
+            response = jsonify({"data":None,"message":"Report ID does not exist","status":204})
+            response.status_code = 204
+            return response
 
     def get(self) -> Response:
         order = Orders.objects.distinct(field="reportID")
         if len(order) > 0:
-            response = jsonify(order)
+            response = jsonify({"data":order,"message":"success","status":200})
             response.status_code = 200
             return response
         else:
-            response = Response()
+            response = jsonify({"data":None,"message":"error","status":204})
             response.status_code = 204
             return response
 
@@ -52,9 +56,11 @@ class OrderApi(Resource):
         order = Orders.objects(oderID=id)
         if len(order) > 0:
             order.delete()
-            return Response(status=200)
+            response = jsonify({"data":None,"message":"success","status":204})
+            response.status_code = 200
+            return response
         else:
-            response = Response()
+            response = jsonify({"data":None,"message":"error","status":204})
             response.status_code = 204
             return response
 
@@ -63,13 +69,13 @@ class SearchOrderByReport(Resource):
 
     def get(self) -> Response:
         body = request.get_json()
-        id = body['reportID']
+        id = request.args.get('reportID')
         order = Orders.objects(reportID=id)
         if len(order) > 0:
-            response = jsonify(order)
+            response = jsonify({"data":order,"message":"success","status":200})
             response.status_code = 200
             return response
         else:
-            response = Response()
+            response = jsonify({"data":None,"message":"report id not found","status":204})
             response.status_code = 204
             return response

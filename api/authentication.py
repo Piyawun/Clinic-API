@@ -37,11 +37,11 @@ class SignUpAPI(Resource):
             }
             user = Users(**data)
             user.save()
-            response = Response()
+            response = jsonify({"data":data,"message":"success","status":200})
             response.status_code = 201
             return response
         except Exception as e:
-            response = Response()
+            response = jsonify({"data":None,"message":"error","status":204})
             response.status_code = 204
             return response
 
@@ -51,11 +51,11 @@ class getUserAPI(Resource):
         user = Users.objects.values_list('staffID', 'name', 'role', 'department', 'username')
 
         if len(user) > 0:
-            response = jsonify(user)
+            response = jsonify({"data":user,"message":"success","status":200})
             response.status_code = 200
             return response
         else:
-            response = Response()
+            response = jsonify({"data":None,"message":"error","status":204})
             response.status_code = 204
             return response
 
@@ -68,12 +68,12 @@ class getUserByIdAPI(Resource):
         user = Users.objects(staffID=staffID).values_list('staffID', 'name', 'role','username', 'department')
 
         if len(user) > 0:
-            response = jsonify(user)
+            response = jsonify({"data":user,"message":"success","status":200})
             response.status_code = 200
             return response
         else:
-            response = Response()
-            response.status_code = 200
+            response = jsonify({"data":None,"message":"success","status":204})
+            response.status_code = 204
             return response
 
     def put(self)->Response:
@@ -85,11 +85,13 @@ class getUserByIdAPI(Resource):
                 set__role=body['role'],
                 set__username=body['username'],
                 set__update_at=str(datetime.utcnow()))
-            response = Response()
+            response = jsonify({"data":body,"message":"success","status":200})
             response.status_code = 200
             return response
         else:
-            return Response("No have booking", status=400)
+            response = jsonify({"data":body,"message":"error","status":400})
+            response.status_code = 400
+            return response
 
 
 class TokenAPI(Resource):
@@ -98,9 +100,9 @@ class TokenAPI(Resource):
         body = request.get_json()
         if body.get is None or body.get is None:
             response = jsonify(
-                OAuthErrorResponse(
+                {"data":OAuthErrorResponse(
                     "invalid_request", "The request is missing a required parameter."
-                ).__dict__
+                ).__dict__,"message":"success","status":400}
             )
             response.status_code = 400
             return response
@@ -110,9 +112,9 @@ class TokenAPI(Resource):
             auth_success = user.check_pw_hash(body.get('password'))
             if not auth_success:
                 response = jsonify(
-                    OAuthErrorResponse(
+                    {"data":OAuthErrorResponse(
                         "invalid_grant", "The username or password is incorrect."
-                    ).__dict__
+                    ).__dict__,"message":"error","status":400}
                 )
                 response.status_code = 400
                 return response
@@ -121,9 +123,9 @@ class TokenAPI(Resource):
                 return generate_token_response(str(user.id))
         except DoesNotExist:
             response = jsonify(
-                OAuthErrorResponse(
+                {"data":OAuthErrorResponse(
                     "invalid_grant", "The username or password is incorrect."
-                ).__dict__
+                ).__dict__,"message":"error","status":400}
             )
         response.status_code = 400
         return response
@@ -142,13 +144,13 @@ def generate_token_response(user: str):
     access_token = create_access_token(identity=user)
     refresh_token = create_refresh_token(identity=user)
     response = jsonify(
-        TokenResponse(
+        {"data":TokenResponse(
             access_token=access_token,
             token_type="bearer",
             expires_in=current_app.config['JWT_ACCESS_TOKEN_EXPIRES'],
             refresh_token=refresh_token,
             staffID=user
-        ).__dict__
+        ).__dict__,"message":"success","status":200}
     )
     response.status_code = 200
     # set_access_cookies(response, access_token)

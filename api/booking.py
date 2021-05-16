@@ -20,11 +20,11 @@ class BookingApi(Resource):
     def get(self) -> Response:
         booking = Bookings.objects()
         if len(booking) > 0:
-            response = jsonify(booking)
+            response = jsonify({"data": booking,"message":"success","status":200})
             response.status_code = 200
             return response
         else:
-            response = Response()
+            response = jsonify({"data":None,"message":"error","status":204})
             response.status_code = 204
             return response
 
@@ -57,19 +57,27 @@ class BookingApi(Resource):
 
         validate_result = schema.validate(data)
         if validate_result.get('success', False) is False:
-            return Response(status=400)
+            response = jsonify({"data":None,"message":"error","status":400})
+            response.status_code = 400
+            return response
         patent = Patients.objects(patentID=body['patentID'])
         if len(patent) > 0:
             try:
 
                 Bookings(**data).save()
-                return Response(status=201)
+                response = jsonify({"data":data,"message":"success","status":201})
+                response.status_code = 201
+                return response
 
             except NotUniqueError:
-                return Response("ID is already exit", status=400)
+                response = jsonify({"data":None,"message":"ID already exit.","status":400})
+                response.status_code = 400
+                return response
 
         else:
-            return Response(status=204)
+            response = jsonify({"data":None,"message":"error","status":204})
+            response.status_code = 204
+            return response
 
 
 class BookingApiID(Resource):
@@ -86,37 +94,41 @@ class BookingApiID(Resource):
         booking = Bookings.objects.aggregate(pipline)
         x = list(booking)
         y = list(x)
+
         if len(y) > 0:
-            response = jsonify(y)
+            response = jsonify({"data":y,"message":"success","status":200})
             response.status_code = 200
             return response
         else:
-            response = Response()
+            response = jsonify({"data":None,"message":"error","status":204})
             response.status_code = 204
             return response
 
 
-def delete(self) -> Response:
-    body = request.get_json()
-    obj = Bookings.objects(bookingID=body['bookingID'])
-    obj.delete()
-    response = Response()
-    response.status_code = 200
-
-
-def put(self) -> Response:
-    body = request.get_json()
-    booking = Bookings.objects(bookingID=body['bookingID'])
-    if len(booking) > 0:
-        Bookings.objects(bookingID=body['bookingID']).update(
-            set__dateBooking=body['dateBooking'],
-            set__status=body['status'],
-            set__update_at=str(datetime.utcnow()))
-        response = Response("Success to updated booking")
+    def delete(self) -> Response:
+        body = request.get_json()
+        obj = Bookings.objects(bookingID=body['bookingID'])
+        obj.delete()
+        response = jsonify({"data":body,"message":"success","status":200})
         response.status_code = 200
         return response
-    else:
-        return Response("No have booking", status=204)
+
+
+    def put(self) -> Response:
+        body = request.get_json()
+        booking = Bookings.objects(bookingID=body['bookingID'])
+        if len(booking) > 0:
+            Bookings.objects(bookingID=body['bookingID']).update(
+                set__dateBooking=body['dateBooking'],
+                set__status=body['status'],
+                set__update_at=str(datetime.utcnow()))
+            response = jsonify({"data":body,"message":"success","status":200})
+            response.status_code = 200
+            return response
+        else:
+            response = jsonify({"data":None,"message":"Booking id exit","status":204})
+            response.status_code = 204
+            return response
 
 
 class BookingIdClose(Resource):
@@ -128,11 +140,13 @@ class BookingIdClose(Resource):
             Bookings.objects(bookingID=body['bookingID']).update(
                 set__status="ตรวจเสร็จสิ้น",
                 set__update_at=str(datetime.utcnow()))
-            response = Response("Success to updated booking")
+            response = jsonify({"data":body,"message":"successfully to update bookings","status":200})
             response.status_code = 200
             return response
         else:
-            return Response("No have booking", status=204)
+            response = jsonify({"data":None,"message":"booking id is exit","status":204})
+            response.status_code = 204
+            return response
 
 
 class ConfIdBooking(Resource):
@@ -144,7 +158,10 @@ class ConfIdBooking(Resource):
                 set__status="กำลังตรวจ",
                 set__update_at=str(datetime.utcnow()))
             response = Response("Success to updated booking")
+            response = jsonify({"data":body,"message":"success","status":200})
             response.status_code = 200
             return response
         else:
-            return Response("No have booking", status=204)
+            response = jsonify({"data":None,"message":"booking id is exit","status":204})
+            response.status_code = 204
+            return response
