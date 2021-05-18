@@ -68,7 +68,6 @@ class OrderApi(Resource):
 class SearchOrderByReport(Resource):
 
     def get(self) -> Response:
-        body = request.get_json()
         id = request.args.get('reportID')
         order = Orders.objects(reportID=id)
         if len(order) > 0:
