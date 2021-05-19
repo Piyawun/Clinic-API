@@ -80,8 +80,8 @@ class MedicineApiID(Resource):
 
     # @jwt_required()
     def get(self) -> Response:
-        body = request.get_json()
-        med = Medicine.objects(medicineID=body['medicineID'])
+        body = request.args.get('medicineID')
+        med = Medicine.objects(medicineID=body)
         if len(med) > 0:
             response = jsonify({"data":med,"message":"success","status":200})
             response.status_code = 200
@@ -105,12 +105,7 @@ class MedicineApiID(Resource):
         med = Medicine.objects(medicineID=body['medicineID'])
         if len(med) > 0:
             Medicine.objects(medicineID=body['medicineID']).update(
-                # set__name=body['name'],
                 set__amount=body['amount'],
-                # set__lot_num=body['lot_num'],
-                # set__MFG=body['MFG'],
-                # set__EXP=body['EXP'],
-                # set__price=body['price'],
                 set__update_at=str(datetime.utcnow()))
             response = jsonify({"data":body,"message":"successfully to update medicineID","status":200})
             response.status_code = 200

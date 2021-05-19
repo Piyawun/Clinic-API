@@ -159,21 +159,21 @@ class ReportIdAPI(Resource):
             response.status_code = 204
             return response
 
-    def put(self) -> Response:
-        body = request.get_json()
-        report = Reports.objects(reportID=body['reportID'])
-        if len(report) > 0:
-            Reports.objects(reportID=body['reportID']).update(
-                set__header=body['header'],
-                set__detail=body['detail'],
-                set__update_at=str(datetime.utcnow()))
-            response = jsonify({"data":body,"message":"success","status":200})
-            response.status_code = 200
-            return response
-        else:
-            response = jsonify({"data":None,"message":"booking id not found","status":204})
-            response.status_code = 204
-            return response
+    # def put(self) -> Response:
+    #     body = request.get_json()
+    #     report = Reports.objects(reportID=body['reportID'])
+    #     if len(report) > 0:
+    #         Reports.objects(reportID=body['reportID']).update(
+    #             set__header=body['header'],
+    #             set__detail=body['detail'],
+    #             set__update_at=str(datetime.utcnow()))
+    #         response = jsonify({"data":body,"message":"success","status":200})
+    #         response.status_code = 200
+    #         return response
+    #     else:
+    #         response = jsonify({"data":None,"message":"booking id not found","status":204})
+    #         response.status_code = 204
+    #         return response
 
 
 class ReportsByUserID(Resource):

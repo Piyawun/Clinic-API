@@ -114,21 +114,21 @@ class BookingApiID(Resource):
         return response
 
 
-    def put(self) -> Response:
-        body = request.get_json()
-        booking = Bookings.objects(bookingID=body['bookingID'])
-        if len(booking) > 0:
-            Bookings.objects(bookingID=body['bookingID']).update(
-                set__dateBooking=body['dateBooking'],
-                set__status=body['status'],
-                set__update_at=str(datetime.utcnow()))
-            response = jsonify({"data":body,"message":"success","status":200})
-            response.status_code = 200
-            return response
-        else:
-            response = jsonify({"data":None,"message":"Booking id exit","status":204})
-            response.status_code = 204
-            return response
+    # def put(self) -> Response:
+    #     body = request.get_json()
+    #     booking = Bookings.objects(bookingID=body['bookingID'])
+    #     if len(booking) > 0:
+    #         Bookings.objects(bookingID=body['bookingID']).update(
+    #             set__dateBooking=body['dateBooking'],
+    #             set__status=body['status'],
+    #             set__update_at=str(datetime.utcnow()))
+    #         response = jsonify({"data":body,"message":"success","status":200})
+    #         response.status_code = 200
+    #         return response
+    #     else:
+    #         response = jsonify({"data":None,"message":"Booking id exit","status":204})
+    #         response.status_code = 204
+    #         return response
 
 
 class BookingIdClose(Resource):

@@ -111,7 +111,7 @@ class PaymentIdAPI(Resource):
         if len(bill) > 0:
             Payments.objects(reportID=reportID).update(set__status="ชำระเงินสำเร็จ",
                                                        set__update_at=str(datetime.utcnow()))
-            response = jsonify({"data":bill,"message":"success","status":200})
+            response = jsonify({"data":None,"message":"success","status":200})
             response.status_code = 200
             return response
         else:

@@ -53,10 +53,10 @@ class OrderApi(Resource):
     def delete(self) -> Response:
         body = request.get_json()
         id = body['orderID']
-        order = Orders.objects(oderID=id)
+        order = Orders.objects(orderID=id)
         if len(order) > 0:
             order.delete()
-            response = jsonify({"data":None,"message":"success","status":204})
+            response = jsonify({"data":None,"message":"success","status":200})
             response.status_code = 200
             return response
         else:
